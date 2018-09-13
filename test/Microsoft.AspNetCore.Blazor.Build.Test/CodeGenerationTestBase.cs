@@ -12,6 +12,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
         public CodeGenerationTestBase()
         {
+            GenerateBaselines = true;
         }
 
         #region Basics
@@ -1219,6 +1220,37 @@ namespace Test
     void OnClick(UIMouseEventArgs e) {
     }
 }");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        #endregion
+
+        #region Generics
+
+        [Fact]
+        public void ChildComponent_Generic()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Blazor.Components;
+
+namespace Test
+{
+    public class MyComponent<TItem> : BlazorComponent
+    {
+        [Parameter] TItem Item { get; set; }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+@addTagHelper *, TestAssembly
+<MyComponent TItem=string Item=""@(""hi"")""/>");
 
             // Assert
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
